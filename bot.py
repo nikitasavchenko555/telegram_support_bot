@@ -4,8 +4,8 @@ import config
 import sqlite3
 import telebot
 import requests
-import json
 import re
+import json
 
 Support_Bot = telebot.TeleBot(config.token)
 
@@ -24,9 +24,16 @@ def check_enter(message):
 @Support_Bot.message_handler(commands=['start'])
 def start(message):
     print('start')
-    conn_base = sqlite3.connect("telegram_base.db")
+    try:
+        conn_base = sqlite3.connect("telegram_base.db")
+    except sqlite3.OperationalError:
+        print("Извините, База Данных временно недоступна")
     cursor = conn_base.cursor()
-    cursor.execute("""select id_user, user_name from users_list where id_user = {id_u}""".format(id_u=message.chat.id))
+    try:
+        cursor.execute(
+            """select id_user, user_name from users_list where id_user = {id_u}""".format(id_u=message.chat.id))
+    except sqlite3.OperationalError:
+        cursor.execute('CREATE TABLE IF NOT EXISTS users_list(id_user integer, user_name text)')
     list_user = str(cursor.fetchall())
     user_id = re.findall(r'[0-9]{8,10}', list_user)
     user_id = re.sub("(\['|\'])", '', str(user_id))
@@ -50,7 +57,7 @@ def hello(message):
     conn_base = sqlite3.connect("telegram_base.db")
     cursor = conn_base.cursor()
     cursor.execute("""insert into users_list
-    values (NULL, :id, :name)""", {"id": user_id, "name": user_name})
+    values (:id, :name)""", {"id": user_id, "name": user_name})
     conn_base.commit()
 
 
@@ -67,7 +74,7 @@ def get_help(message):
 @Support_Bot.message_handler(commands=['joke'])
 def get_joke(message):
     response = requests.get('http://rzhunemogu.ru/RandJSON.aspx?CType=1')
-    text = response.text
+    text = response.json()
     text = re.sub('{"content":"', '', text)
     text = re.sub('\"}', '', text)
     Support_Bot.send_message(message.chat.id, text)
@@ -76,7 +83,7 @@ def get_joke(message):
 @Support_Bot.message_handler(commands=['story'])
 def get_story(message):
     response = requests.get('http://rzhunemogu.ru/RandJSON.aspx?CType=2')
-    text = response.text
+    text = response.json()
     text = re.sub('{"content":"', '', text)
     text = re.sub('\"}', '', text)
     Support_Bot.send_message(message.chat.id, text)
