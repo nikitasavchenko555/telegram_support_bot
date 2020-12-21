@@ -73,8 +73,9 @@ def get_help(message):
 
 @Support_Bot.message_handler(commands=['joke'])
 def get_joke(message):
+    # парсим регуляркой, т.к. response.json() не работает
     response = requests.get('http://rzhunemogu.ru/RandJSON.aspx?CType=1')
-    text = response.json()
+    text = response.text
     text = re.sub('{"content":"', '', text)
     text = re.sub('\"}', '', text)
     Support_Bot.send_message(message.chat.id, text)
@@ -82,8 +83,9 @@ def get_joke(message):
 
 @Support_Bot.message_handler(commands=['story'])
 def get_story(message):
+    #парсим регуляркой, т.к. response.json() не работает
     response = requests.get('http://rzhunemogu.ru/RandJSON.aspx?CType=2')
-    text = response.json()
+    text = response.text
     text = re.sub('{"content":"', '', text)
     text = re.sub('\"}', '', text)
     Support_Bot.send_message(message.chat.id, text)
