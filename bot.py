@@ -5,7 +5,6 @@ import sqlite3
 import telebot
 import requests
 import re
-import json
 
 Support_Bot = telebot.TeleBot(config.token)
 
@@ -39,9 +38,6 @@ def start(message):
     user_id = re.sub("(\['|\'])", '', str(user_id))
     user_name = re.findall(r'[А-Яа-я]{3,15}', list_user)
     user_name = re.sub("(\['|\'])", '', str(user_name))
-    print(user_id)
-    print(user_name)
-    print(str(message.chat.id))
     if user_id == str(message.chat.id):
         Support_Bot.send_message(message.chat.id, 'Привет, {name}!'.format(name=user_name))
     else:
