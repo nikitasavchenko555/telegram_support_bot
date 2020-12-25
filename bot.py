@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from telebot.types import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton
 
 import config
 import sqlite3
@@ -9,7 +10,7 @@ import re
 Support_Bot = telebot.TeleBot(config.token)
 
 
-@Support_Bot.message_handler(regexp="[^start][^joke][^story][^help]")
+@Support_Bot.message_handler(regexp="[^start][^joke][^story][^help][^location]")
 def check_enter(message):
     text = """Введите что-нибудь другое:)
     Основные команды бота:
@@ -88,12 +89,19 @@ def get_story(message):
 
 
 @Support_Bot.message_handler(commands=['location'])
-def location(message):
-    print(message.location)
-    print(type(message.location))
-    text = 'Я получил Вашу геолокацию, спасибо!'
-    Support_Bot.send_message(message.chat.id, text)
+def get_location(message):
+    keyboard = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    button_geo = KeyboardButton(text="Отправить местоположение", request_location=True)
+    keyboard.add(button_geo)
+    Support_Bot.send_message(message.chat.id, "Пожалуйста, нажмите на кнопку, чтобы передать местоположение. \n"
+                                              "Не забудьте включить геолокацию:)",
+                             reply_markup=keyboard)
 
+
+@Support_Bot.message_handler(content_types=['location'])
+def save_location(message):
+    if message.location is not None:
+        print(message.location.latitude, message.location.longitude)
 
 if __name__ == '__main__':
     Support_Bot.polling(none_stop=True)
