@@ -9,7 +9,7 @@ import re
 Support_Bot = telebot.TeleBot(config.token)
 
 
-@Support_Bot.message_handler(regexp="[^help][^joke][^story][^start]")
+@Support_Bot.message_handler(regexp="[^start][^joke][^story][^help]")
 def check_enter(message):
     text = """Введите что-нибудь другое:)
     Основные команды бота:
@@ -49,7 +49,7 @@ def hello(message):
     user_name = message.text
     user_id = str(message.chat.id)
     Support_Bot.send_message(message.chat.id,
-                             'Привет, {name_user}. Рад тебя видеть.'.format(name_user=user_name))
+                             'Привет, {name_user}. Рад Вас видеть.'.format(name_user=user_name))
     conn_base = sqlite3.connect("telegram_base.db")
     cursor = conn_base.cursor()
     cursor.execute("""insert into users_list
@@ -79,11 +79,19 @@ def get_joke(message):
 
 @Support_Bot.message_handler(commands=['story'])
 def get_story(message):
-    #парсим регуляркой, т.к. response.json() не работает
+    # парсим регуляркой, т.к. response.json() не работает
     response = requests.get('http://rzhunemogu.ru/RandJSON.aspx?CType=2')
     text = response.text
     text = re.sub('{"content":"', '', text)
     text = re.sub('\"}', '', text)
+    Support_Bot.send_message(message.chat.id, text)
+
+
+@Support_Bot.message_handler(commands=['location'])
+def location(message):
+    print(message.location)
+    print(type(message.location))
+    text = 'Я получил Вашу геолокацию, спасибо!'
     Support_Bot.send_message(message.chat.id, text)
 
 
